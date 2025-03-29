@@ -10,6 +10,7 @@ import (
   "time"
 )
 
+// Log Entry struct
 type LogEntry struct {
   Timestamp         time.Time `json:"time_stamp"`
   JobDescription    string    `json:"job_description"`
@@ -17,6 +18,7 @@ type LogEntry struct {
   PID               string    `json:"pid"`
 }
 
+// Color for end user to differntiate between log level
 const (
   ColorReset = "\033[0m"
   ColorRed   = "\033[31m"
@@ -81,7 +83,7 @@ func main() {
 
   defer file.Close()
 
-
+  // Define map to measure start / end times
   startTimes := make(map[string]time.Time)
   endTimes := make(map[string]time.Time)
 
@@ -98,6 +100,7 @@ func main() {
       continue
     }
 
+    // We want to make sure that we contain proper start / end times
     switch entry.LogEntry {
     case "START":
           startTimes[entry.PID] = entry.Timestamp 
@@ -127,6 +130,7 @@ func main() {
 
     fmt.Printf("%s[INFO]%s PID %s took %dm %ds \n", ColorGreen, ColorReset, pid, mins, secs)
 
+    // Check duration so that we can sort it out in each layer
     if duration > 10 * time.Minute {
       failCount++
       fmt.Printf("%s[ERROR]%s PID %s exceed 10 minutes \n", ColorRed, ColorReset, pid)
@@ -134,18 +138,16 @@ func main() {
       warnCount++
       fmt.Printf("%s[WARNING]%s Job %s exceeds 5 minutes \n", ColorYellow, ColorReset, pid)
     } else {
-      passCount++
+      passCount++ // keep track of pass project
     }
   }
 
   // Summary of the task
   fmt.Println("\n==================== Summary =================")
-  fmt.Printf("%s %d Projects in total %s \n", ColorGreen, totalJobs, ColorReset)
+  fmt.Printf("%s %d projects in total %s \n", ColorGreen, totalJobs, ColorReset)
   fmt.Printf("%s %d project(s) missing END for job %s \n", ColorYellow, missingEndCount, ColorReset)
   fmt.Printf("%s %d passed within 5 minutes %s \n", ColorGreen, passCount, ColorReset)
   fmt.Printf("%s %d exceed 5 minutes but not 10 %s \n", ColorYellow, warnCount, ColorReset)
   fmt.Printf("%s %d failed (more than 10 minutes) %s \n", ColorRed, failCount, ColorReset)
   fmt.Println("==================== END ====================")
-
-
 }
